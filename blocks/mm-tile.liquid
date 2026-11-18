@@ -1,0 +1,42 @@
+{%- doc -%}
+  A tall image tile with an arch-topped photograph and a caption underneath,
+  used for the scent-family links on the homepage. Compositional: the caption
+  copy is supplied as child blocks through `content`.
+
+  @param {string} [class] - Extra utilities for the tile.
+  @param {string} [attributes] - Extra attributes for the tile.
+  @param {image} [fallback_image] - Shown until the merchant picks an image.
+
+  @example
+  {% block 'mm-tile', url: collection.url, fallback_image: image %}...{% endblock %}
+{%- enddoc -%}
+{%- assign tile_image = image | default: fallback_image -%}
+{% style %}
+  .mmt { display: grid; gap: 18px; text-decoration: none; color: inherit; }
+  .mmt__img { aspect-ratio: 4 / 5; overflow: hidden; border-radius: 999px 999px 14px 14px / 200px 200px 14px 14px; background: #F2DFD8; }
+  .mmt__img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .6s var(--ease-ui, cubic-bezier(.2, .8, .2, 1)); }
+  .mmt:hover .mmt__img img { transform: scale(1.04); }
+  .mmt__cap { display: grid; gap: 6px; justify-items: center; text-align: center; }
+  .mmt__cap h3 { font-family: var(--font-heading); font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem); }
+  .mmt__cap p { color: #6B3A3F; max-width: 36ch; }
+  .mmt__cap .mmt-cta { margin-block-start: 6px; font-size: .78rem; letter-spacing: .2em; text-transform: uppercase; color: #4F1015; border-block-end: 1px solid currentColor; padding-block-end: 2px; }
+  @media (prefers-reduced-motion: reduce) { .mmt__img img { transition: none; } }
+{% endstyle %}
+<a href="{{ url | default: routes.all_products_collection_url }}" class="mmt {{ class }}"{% if attributes != blank %} {{ attributes }}{% endif %}>
+  <div class="mmt__img">
+    {%- if tile_image -%}
+      {{ tile_image | image_url: width: 900 | image_tag: loading: 'lazy', sizes: '(min-width: 860px) 40vw, 90vw', widths: '400,600,900', alt: tile_image.alt }}
+    {%- endif -%}
+  </div>
+  <div class="mmt__cap">{{ content }}</div>
+</a>
+
+{% schema %}
+{
+  "name": "t:mm.blocks.tile",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "t:mm.blocks.image" },
+    { "type": "url", "id": "url", "label": "t:mm.blocks.link" }
+  ]
+}
+{% endschema %}

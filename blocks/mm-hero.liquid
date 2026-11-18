@@ -1,0 +1,60 @@
+{%- doc -%}
+  Misk & Mirr homepage hero. An oxblood band with the brand copy on the
+  reading-start side and a product photograph framed in an arch, which echoes
+  the bottle in the logo. Compositional: the template supplies the overline,
+  heading, text and buttons as child blocks through `content`.
+
+  @param {string} [class] - Extra utilities for the section.
+  @param {string} [attributes] - Extra attributes for the section.
+  @param {image} [fallback_image] - Shown until the merchant picks an image.
+
+  @example
+  {% block 'mm-hero', fallback_image: product.featured_image %}...{% endblock %}
+{%- enddoc -%}
+{%- assign hero_image = image | default: fallback_image -%}
+{% style %}
+  .mmh { position: relative; isolation: isolate; overflow: hidden; background: #4F1015; color: #FBF6F3; }
+  .mmh__mark { position: absolute; inset-block-start: -8%; inset-inline-start: -6%; width: min(46vw, 560px); color: #FBF6F3; opacity: .05; z-index: -1; pointer-events: none; }
+  .mmh__mark svg { width: 100%; height: auto; display: block; }
+  .mmh__grid { max-width: 1280px; margin-inline: auto; padding-inline: max(20px, 4vw); padding-block: clamp(48px, 7vw, 96px); display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .mmh__copy { display: grid; gap: 22px; justify-items: start; }
+  .mmh__copy h2 { font-family: var(--font-heading); font-size: clamp(2.6rem, 1.4rem + 4.4vw, 5.2rem); line-height: 1.02; letter-spacing: -0.01em; text-wrap: balance; }
+  .mmh__copy p { max-width: 46ch; color: #F1DCD4; font-size: 1.08rem; line-height: 1.7; }
+  .mmh__copy .mmh-over { color: #E2BE9C; letter-spacing: .22em; }
+  .mmh__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-block-start: 8px; }
+  .mmh__actions > * { min-height: 48px; padding-inline: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-weight: 500; letter-spacing: .04em; }
+  .mmh__actions > *:first-child { background: #FBF6F3; color: #4F1015; border: 1px solid #FBF6F3; }
+  .mmh__actions > *:first-child:hover { background: #F2DFD8; }
+  .mmh__actions > *:nth-child(2) { background: transparent; color: #FBF6F3; border: 1px solid rgba(251, 246, 243, .55); }
+  .mmh__actions > *:nth-child(2):hover { border-color: #FBF6F3; background: rgba(251, 246, 243, .08); }
+  .mmh__frame { position: relative; justify-self: center; width: min(100%, 460px); }
+  .mmh__frame::before { content: ""; position: absolute; inset: -14px; border: 1px solid rgba(226, 190, 156, .55); border-radius: 999px 999px 22px 22px / 260px 260px 22px 22px; }
+  .mmh__img { aspect-ratio: 4 / 5; border-radius: 999px 999px 16px 16px / 240px 240px 16px 16px; overflow: hidden; background: #3A0A0F; }
+  .mmh__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 860px) {
+    .mmh__grid { grid-template-columns: minmax(0, 1fr); }
+    .mmh__frame { width: min(86%, 380px); order: -1; }
+  }
+{% endstyle %}
+<section class="mmh {{ class }}"{% if attributes != blank %} {{ attributes }}{% endif %}>
+  <div class="mmh__mark" aria-hidden="true">{{ 'mm-symbol.svg' | inline_asset_content }}</div>
+  <div class="mmh__grid">
+    <div class="mmh__copy">{{ content }}</div>
+    <div class="mmh__frame">
+      <div class="mmh__img">
+        {%- if hero_image -%}
+          {{ hero_image | image_url: width: 1100 | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '(min-width: 860px) 460px, 86vw', widths: '400,600,800,1100', alt: hero_image.alt }}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "t:mm.blocks.hero",
+  "settings": [
+    { "type": "image_picker", "id": "image", "label": "t:mm.blocks.image" }
+  ]
+}
+{% endschema %}

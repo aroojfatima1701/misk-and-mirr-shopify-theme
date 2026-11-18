@@ -1,0 +1,110 @@
+{%- comment -%} Visually-hidden page heading keeps the homepage's h1 contract while its regions provide the visible composition. {%- endcomment -%}
+<h1 class="sr-only">{{ shop.name }}</h1>
+
+{%- liquid
+  assign hero_product = all_products['vetiver-pepper']
+  assign woody_product = all_products['rouge-oud']
+  assign bright_product = all_products['cherry-misk']
+  assign story_product = all_products['signature']
+  assign gift_product = all_products['daydream-trio']
+  assign woody_collection = collections['woody-amber']
+  assign bright_collection = collections['floral-fruity']
+  assign gift_collection = collections['gifts-sets']
+-%}
+
+{%- comment -%} Bespoke hero owns its own section and background; the copy and buttons below are separately editable blocks. {%- endcomment -%}
+{% block 'mm-hero', fallback_image: hero_product.featured_image, attributes: 'aria-labelledby="home-hero-heading"' %}
+  {% block 'text', variant: 'sm', class: 'mmh-over uppercase', tag: 'p' %}{{ 'mm.home.hero_over' | t }}{% endblock %}
+  {% block 'heading', tag: 'h2', variant: '2xl', attributes: 'id="home-hero-heading"' %}{{ 'mm.home.hero_title' | t }}{% endblock %}
+  {% block 'text', variant: 'lg', tag: 'p' %}{{ 'mm.home.hero_text' | t }}{% endblock %}
+  <div class="mmh__actions">
+    {% block 'button', url: routes.all_products_collection_url, variant: 'button-primary', class: '' %}{{ 'mm.home.hero_shop' | t }}{% endblock %}
+    {% block 'button', url: '#find-your-scent', variant: 'button-outline', class: '' %}{{ 'mm.home.hero_quiz' | t }}{% endblock %}
+  </div>
+{% endblock %}
+
+{% block 'mm-band' %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_1' | t }}{% endblock %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_2' | t }}{% endblock %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_3' | t }}{% endblock %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_4' | t }}{% endblock %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_5' | t }}{% endblock %}
+  {% block 'text', tag: 'span', variant: 'md' %}{{ 'mm.home.note_6' | t }}{% endblock %}
+{% endblock %}
+
+{%- liquid
+  assign featured_collection = collections['eau-de-parfum']
+  assign featured_product_count = featured_collection.all_products_count | at_most: 10
+  assign featured_url = featured_collection.url | default: routes.all_products_collection_url
+  assign featured_product_sizes = '(min-width: 768px) 20vw, 50vw'
+-%}
+
+{%- comment -%} This bespoke shell owns its section/background/padding; do not double-wrap it in container. {%- endcomment -%}
+{% block 'featured-collection', collection: featured_collection %}
+  <div class="flex flex-col items-center gap-2 mb-10 max-w-page mx-auto px-margin text-center">
+    {% block 'text', variant: 'sm', tag: 'p', class: 'uppercase tracking-widest text-accent' %}{{ 'mm.home.collection_over' | t }}{% endblock %}
+    {% block 'heading', tag: 'h2', variant: 'xl' %}{{ 'mm.home.collection_title' | t }}{% endblock %}
+    {% block 'link', url: featured_url %}{{ 'collections.view_all' | t }}{% endblock %}
+  </div>
+
+  <div class="w-full max-w-page mx-auto px-margin contain-paint">
+    <ul role="list" class="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-10 stagger-fade-in">
+      {% for product in featured_collection.products limit: featured_product_count %}
+        <li>
+          <s-view-event class="block" view-event-trigger="intersect" view-event-payload="{{ product | standard_event_data: 'view', context: 'collection' | escape }}">
+            {%- assign card_variant = product.selected_or_first_available_variant -%}
+            {% block 'card', block.name: 't:blocks.product_card', url: product.url, aria_label: product.title, border_radius: 'rounded-card' %}
+              <a href="{{ product.url | escape }}" class="relative block overflow-hidden rounded-[inherit]" aria-label="{{ product.title | escape }}">
+                {% block 'image', fallback_image: product.featured_image, aspect_ratio: 'aspect-3/4', sizes: featured_product_sizes, attributes: 'loading="lazy"', alt: product.title, seed: forloop.index %}{% endblock %}
+              </a>
+              <div class="flex flex-col gap-0.5">
+                {% block 'text', variant: 'md', tag: 'h3', class: 'font-heading text-on-surface' %}{{ product.title | escape }}{% endblock %}
+                {% block 'text', variant: 'sm', tag: 'p', class: 'text-on-surface-secondary line-clamp-2' %}{{ product.metafields.custom.family.value | escape }}{% endblock %}
+                {% block 'price', price: card_variant.price, compare_at_price: card_variant.compare_at_price, price_min: product.price_min, price_max: product.price_max, class: 'text-sm font-medium self-start' %}{% endblock %}
+              </div>
+            {% endblock %}
+          </s-view-event>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}
+
+{% block 'container', class: 'w-full max-w-page mx-auto px-margin' %}
+  <div class="flex flex-col items-center gap-2 mb-10 text-center">
+    {% block 'text', variant: 'sm', tag: 'p', class: 'uppercase tracking-widest text-accent' %}{{ 'mm.home.families_over' | t }}{% endblock %}
+    {% block 'heading', tag: 'h2', variant: 'xl' %}{{ 'mm.home.families_title' | t }}{% endblock %}
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+    {% block 'mm-tile', url: woody_collection.url, fallback_image: woody_product.featured_image %}
+      {% block 'heading', tag: 'h3', variant: 'md' %}{{ 'mm.home.woody_title' | t }}{% endblock %}
+      {% block 'text', tag: 'p', variant: 'md' %}{{ 'mm.home.woody_text' | t }}{% endblock %}
+      {% block 'text', tag: 'span', variant: 'sm', class: 'mmt-cta' %}{{ 'mm.home.explore' | t }}{% endblock %}
+    {% endblock %}
+    {% block 'mm-tile', url: bright_collection.url, fallback_image: bright_product.featured_image %}
+      {% block 'heading', tag: 'h3', variant: 'md' %}{{ 'mm.home.bright_title' | t }}{% endblock %}
+      {% block 'text', tag: 'p', variant: 'md' %}{{ 'mm.home.bright_text' | t }}{% endblock %}
+      {% block 'text', tag: 'span', variant: 'sm', class: 'mmt-cta' %}{{ 'mm.home.explore' | t }}{% endblock %}
+    {% endblock %}
+  </div>
+{% endblock %}
+
+{% block 'mm-quiz', fallback_collection: collections['eau-de-parfum'] %}{% endblock %}
+
+{% block 'mm-split', fallback_image: story_product.featured_image %}
+  {% block 'text', variant: 'sm', tag: 'p', class: 'mms-over uppercase' %}{{ 'mm.home.story_over' | t }}{% endblock %}
+  {% block 'heading', tag: 'h2', variant: 'xl' %}{{ 'mm.home.story_title' | t }}{% endblock %}
+  {% block 'text', tag: 'p', variant: 'md' %}{{ 'mm.home.story_text' | t }}{% endblock %}
+  <ul>
+    {% block 'text', tag: 'li', variant: 'md' %}{{ 'mm.home.story_point_1' | t }}{% endblock %}
+    {% block 'text', tag: 'li', variant: 'md' %}{{ 'mm.home.story_point_2' | t }}{% endblock %}
+    {% block 'text', tag: 'li', variant: 'md' %}{{ 'mm.home.story_point_3' | t }}{% endblock %}
+  </ul>
+{% endblock %}
+
+{% block 'mm-split', fallback_image: gift_product.featured_image, reverse: true, dark: true %}
+  {% block 'text', variant: 'sm', tag: 'p', class: 'mms-over uppercase' %}{{ 'mm.home.gift_over' | t }}{% endblock %}
+  {% block 'heading', tag: 'h2', variant: 'xl' %}{{ 'mm.home.gift_title' | t }}{% endblock %}
+  {% block 'text', tag: 'p', variant: 'md' %}{{ 'mm.home.gift_text' | t }}{% endblock %}
+  {% block 'link', url: gift_collection.url, class: 'mms-btn' %}{{ 'mm.home.gift_cta' | t }}{% endblock %}
+{% endblock %}

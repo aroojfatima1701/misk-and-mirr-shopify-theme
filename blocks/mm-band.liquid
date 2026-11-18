@@ -1,0 +1,24 @@
+{%- doc -%}
+  A thin band of scent notes between homepage regions. Compositional: each note
+  is a `text` block supplied by the template, so the merchant can reword or
+  reorder them. Dots between the notes are drawn in CSS.
+
+  @param {string} [class] - Extra utilities for the band.
+  @param {string} [attributes] - Extra attributes for the band.
+
+  @example
+  {% block 'mm-band' %}{% block 'text' %}Saffron{% endblock %}{% endblock %}
+{%- enddoc -%}
+{% style %}
+  .mmb { background: #F2DFD8; color: #4F1015; border-block: 1px solid rgba(79, 16, 21, .12); }
+  .mmb__row { max-width: 1280px; margin-inline: auto; padding: 18px max(20px, 4vw); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 26px; font-family: var(--font-heading); font-size: 1.15rem; font-style: italic; }
+  .mmb__row > * { position: relative; }
+  .mmb__row > * + *::before { content: "\2726"; position: absolute; inset-inline-start: -19px; font-style: normal; font-size: .7rem; color: #B07E5C; top: 50%; transform: translateY(-50%); }
+{% endstyle %}
+<div class="mmb {{ class }}"{% if attributes != blank %} {{ attributes }}{% endif %}>
+  <div class="mmb__row">{{ content }}</div>
+</div>
+
+{% schema %}
+{ "name": "t:mm.blocks.band", "settings": [] }
+{% endschema %}

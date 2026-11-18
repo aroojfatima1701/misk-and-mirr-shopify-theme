@@ -1,0 +1,123 @@
+{%- doc -%}
+  "Find your scent" quiz. Three quick questions; the answers are scored against
+  each product's tags (mood:day / mood:evening, family:*) and its
+  custom.intensity metafield, and the best match is shown with a link to it.
+  Self-contained: the questions are fixed UI strings, the products come from
+  the collection setting. Behaviour lives in assets/mm-scent-quiz.js.
+
+  @param {string} [class] - Extra utilities for the section.
+  @param {string} [attributes] - Extra attributes for the section.
+  @param {collection} [fallback_collection] - Used until the merchant picks a collection.
+
+  @example
+  {% block 'mm-quiz', fallback_collection: collections.all %}{% endblock %}
+{%- enddoc -%}
+{%- assign quiz_collection = collection | default: fallback_collection -%}
+{% style %}
+  .mmq { background: #FBF6F3; color: #2E0A0E; }
+  .mmq__wrap { max-width: 1080px; margin-inline: auto; padding: clamp(56px, 7vw, 104px) max(20px, 4vw); display: grid; gap: 36px; }
+  .mmq__head { display: grid; gap: 12px; justify-items: center; text-align: center; }
+  .mmq__head .mmq-over { font-size: .78rem; letter-spacing: .24em; text-transform: uppercase; color: #8C3A43; }
+  .mmq__head h2 { font-family: var(--font-heading); font-size: clamp(2rem, 1.3rem + 2.4vw, 3.2rem); line-height: 1.1; }
+  .mmq__head p { color: #6B3A3F; max-width: 52ch; }
+  .mmq form { display: grid; gap: 26px; }
+  .mmq form[hidden] { display: none; }
+  .mmq fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .mmq legend { font-family: var(--font-heading); font-size: 1.25rem; margin-block-end: 12px; display: flex; gap: 12px; align-items: baseline; }
+  .mmq legend span { font-family: var(--font-body); font-size: .75rem; letter-spacing: .2em; color: #B07E5C; }
+  .mmq__opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .mmq__opt { position: relative; }
+  .mmq__opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .mmq__opt label { display: grid; gap: 4px; padding: 16px 20px; border: 1px solid rgba(79, 16, 21, .2); border-radius: 14px; background: #fff; cursor: pointer; transition: border-color .2s, background .2s, box-shadow .2s; }
+  .mmq__opt label b { font-weight: 600; color: #4F1015; }
+  .mmq__opt label small { color: #6B3A3F; font-size: .9rem; }
+  .mmq__opt input:checked + label { border-color: #4F1015; background: #F2DFD8; box-shadow: inset 0 0 0 1px #4F1015; }
+  .mmq__opt input:focus-visible + label { outline: 2px solid #B07E5C; outline-offset: 3px; }
+  .mmq__submit { justify-self: center; min-height: 52px; padding-inline: 36px; border-radius: 999px; background: #4F1015; color: #FBF6F3; border: 0; font: inherit; letter-spacing: .04em; cursor: pointer; }
+  .mmq__submit:hover { background: #3A0A0F; }
+  .mmq__result { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 28px; align-items: center; padding: 24px; border-radius: 20px; background: #2E0A0E; color: #FBF6F3; }
+  .mmq__result[hidden] { display: none; }
+  .mmq__result img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 120px 120px 12px 12px / 90px 90px 12px 12px; display: block; }
+  .mmq__result .mmq-match { font-size: .75rem; letter-spacing: .22em; text-transform: uppercase; color: #E2BE9C; }
+  .mmq__result h3 { font-family: var(--font-heading); font-size: clamp(1.8rem, 1.3rem + 1.6vw, 2.6rem); margin-block: 6px 8px; }
+  .mmq__result p { color: #F1DCD4; max-width: 46ch; }
+  .mmq__result .mmq-price { margin-block: 12px 18px; font-size: 1.05rem; }
+  .mmq__result a { display: inline-flex; align-items: center; min-height: 48px; padding-inline: 28px; border-radius: 999px; background: #FBF6F3; color: #4F1015; letter-spacing: .04em; }
+  .mmq__again { margin-inline-start: 16px; background: none; border: 0; color: #F1DCD4; text-decoration: underline; font: inherit; cursor: pointer; }
+  @media (max-width: 640px) {
+    .mmq__opts { grid-template-columns: minmax(0, 1fr); }
+    .mmq__result { grid-template-columns: minmax(0, 1fr); text-align: center; justify-items: center; }
+    .mmq__result img { max-width: 220px; }
+    .mmq__again { margin: 12px 0 0; display: block; }
+  }
+{% endstyle %}
+<section class="mmq {{ class }}" id="find-your-scent"{% if attributes != blank %} {{ attributes }}{% endif %}>
+  <mm-scent-quiz class="mmq__wrap">
+    <script type="application/json">
+      [
+        {%- for p in quiz_collection.products limit: 24 -%}
+          {
+            "title": {{ p.title | json }},
+            "url": {{ p.url | json }},
+            "image": {{ p.featured_image | image_url: width: 600 | json }},
+            "alt": {{ p.featured_image.alt | default: p.title | json }},
+            "price": {{ p.price | money | json }},
+            "tagline": {{ p.metafields.custom.tagline.value | default: '' | json }},
+            "intensity": {{ p.metafields.custom.intensity.value | default: 3 | json }},
+            "tags": {{ p.tags | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    </script>
+    <div class="mmq__head">
+      <span class="mmq-over">{{ 'mm.quiz.over' | t }}</span>
+      <h2>{{ 'mm.quiz.title' | t }}</h2>
+      <p>{{ 'mm.quiz.intro' | t }}</p>
+    </div>
+    <form>
+      <fieldset>
+        <legend><span>01</span>{{ 'mm.quiz.q1' | t }}</legend>
+        <div class="mmq__opts">
+          <div class="mmq__opt"><input type="radio" name="time" value="day" id="mmq-day" required><label for="mmq-day"><b>{{ 'mm.quiz.day' | t }}</b><small>{{ 'mm.quiz.day_hint' | t }}</small></label></div>
+          <div class="mmq__opt"><input type="radio" name="time" value="evening" id="mmq-evening"><label for="mmq-evening"><b>{{ 'mm.quiz.evening' | t }}</b><small>{{ 'mm.quiz.evening_hint' | t }}</small></label></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend><span>02</span>{{ 'mm.quiz.q2' | t }}</legend>
+        <div class="mmq__opts">
+          <div class="mmq__opt"><input type="radio" name="love" value="bright" id="mmq-bright" required><label for="mmq-bright"><b>{{ 'mm.quiz.bright' | t }}</b><small>{{ 'mm.quiz.bright_hint' | t }}</small></label></div>
+          <div class="mmq__opt"><input type="radio" name="love" value="warm" id="mmq-warm"><label for="mmq-warm"><b>{{ 'mm.quiz.warm' | t }}</b><small>{{ 'mm.quiz.warm_hint' | t }}</small></label></div>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend><span>03</span>{{ 'mm.quiz.q3' | t }}</legend>
+        <div class="mmq__opts">
+          <div class="mmq__opt"><input type="radio" name="strength" value="soft" id="mmq-soft" required><label for="mmq-soft"><b>{{ 'mm.quiz.soft' | t }}</b><small>{{ 'mm.quiz.soft_hint' | t }}</small></label></div>
+          <div class="mmq__opt"><input type="radio" name="strength" value="bold" id="mmq-bold"><label for="mmq-bold"><b>{{ 'mm.quiz.bold' | t }}</b><small>{{ 'mm.quiz.bold_hint' | t }}</small></label></div>
+        </div>
+      </fieldset>
+      <button type="submit" class="mmq__submit">{{ 'mm.quiz.submit' | t }}</button>
+    </form>
+    <div class="mmq__result" hidden aria-live="polite">
+      <img src="" alt="" width="440" height="550">
+      <div>
+        <span class="mmq-match">{{ 'mm.quiz.match' | t }}</span>
+        <h3></h3>
+        <p data-tagline></p>
+        <div class="mmq-price"></div>
+        <a href="#">{{ 'mm.quiz.view' | t }}</a>
+        <button type="button" class="mmq__again">{{ 'mm.quiz.again' | t }}</button>
+      </div>
+    </div>
+  </mm-scent-quiz>
+</section>
+<script type="module" src="{{ 'mm-scent-quiz.js' | asset_url }}"></script>
+
+{% schema %}
+{
+  "name": "t:mm.blocks.quiz",
+  "settings": [
+    { "type": "collection", "id": "collection", "label": "t:mm.blocks.collection" }
+  ]
+}
+{% endschema %}

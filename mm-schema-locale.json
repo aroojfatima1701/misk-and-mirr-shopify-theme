@@ -1,0 +1,13 @@
+{
+ "blocks": {
+  "hero": "Misk & Mirr hero",
+  "band": "Notes band",
+  "tile": "Image tile",
+  "split": "Image and text",
+  "quiz": "Scent quiz",
+  "notes": "Scent notes",
+  "image": "Image",
+  "link": "Link",
+  "collection": "Collection"
+ }
+}

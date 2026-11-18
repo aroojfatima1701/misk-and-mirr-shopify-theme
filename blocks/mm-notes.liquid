@@ -1,0 +1,58 @@
+{%- doc -%}
+  Scent profile for the product page: the top, heart and base notes as a small
+  pyramid, then intensity, longevity and projection. Reads the product's
+  custom.* metafields and renders nothing when they are empty. Self-contained.
+
+  @param {product} [product] - The product to describe. Default: the page product.
+  @param {string} [class] - Extra utilities for the wrapper.
+  @param {string} [attributes] - Extra attributes for the wrapper.
+
+  @example
+  {% block 'mm-notes', product: product %}{% endblock %}
+{%- enddoc -%}
+{%- liquid
+  assign p = product
+  assign mf = p.metafields.custom
+  assign level = mf.intensity.value | default: 0
+-%}
+{%- if mf.notes_top != blank or mf.notes_heart != blank or mf.notes_base != blank -%}
+{% style %}
+  .mmn { display: grid; gap: 18px; padding: 22px; border-radius: 16px; background: #F7EAE5; color: #2E0A0E; }
+  .mmn__tag { font-family: var(--font-heading); font-style: italic; font-size: 1.1rem; color: #4F1015; }
+  .mmn__pyr { display: grid; gap: 10px; margin: 0; }
+  .mmn__pyr div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+  .mmn__pyr dt { font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: #8C3A43; }
+  .mmn__pyr dd { margin: 0; }
+  .mmn__stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-block-start: 16px; border-block-start: 1px solid rgba(79, 16, 21, .14); }
+  .mmn__stats div { display: grid; gap: 6px; }
+  .mmn__stats span { font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: #8C3A43; }
+  .mmn__dots { display: flex; gap: 4px; }
+  .mmn__dots i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #4F1015; display: block; }
+  .mmn__dots i.on { background: #4F1015; }
+  @media (max-width: 420px) { .mmn__stats { grid-template-columns: minmax(0, 1fr); } }
+{% endstyle %}
+<div class="mmn {{ class }}"{% if attributes != blank %} {{ attributes }}{% endif %}>
+  {%- if mf.tagline != blank -%}<p class="mmn__tag">{{ mf.tagline.value | escape }}</p>{%- endif -%}
+  <dl class="mmn__pyr">
+    {%- if mf.notes_top != blank -%}<div><dt>{{ 'mm.notes.top' | t }}</dt><dd>{{ mf.notes_top.value | escape }}</dd></div>{%- endif -%}
+    {%- if mf.notes_heart != blank -%}<div><dt>{{ 'mm.notes.heart' | t }}</dt><dd>{{ mf.notes_heart.value | escape }}</dd></div>{%- endif -%}
+    {%- if mf.notes_base != blank -%}<div><dt>{{ 'mm.notes.base' | t }}</dt><dd>{{ mf.notes_base.value | escape }}</dd></div>{%- endif -%}
+  </dl>
+  <div class="mmn__stats">
+    {%- if level > 0 -%}
+      <div>
+        <span>{{ 'mm.notes.intensity' | t }}</span>
+        <div class="mmn__dots" role="img" aria-label="{{ 'mm.notes.intensity_label' | t: level: level }}">
+          {%- for i in (1..5) -%}<i{% if i <= level %} class="on"{% endif %}></i>{%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+    {%- if mf.longevity != blank -%}<div><span>{{ 'mm.notes.longevity' | t }}</span>{{ mf.longevity.value | escape }}</div>{%- endif -%}
+    {%- if mf.sillage != blank -%}<div><span>{{ 'mm.notes.sillage' | t }}</span>{{ mf.sillage.value | escape }}</div>{%- endif -%}
+  </div>
+</div>
+{%- endif -%}
+
+{% schema %}
+{ "name": "t:mm.blocks.notes", "settings": [] }
+{% endschema %}
