@@ -18,3 +18,8 @@ Custom Online Store 2.0 theme work for Misk & Mirr, a perfume brand for the UAE:
 Self-initiated concept project with sample data, built to the standard of client work. No real bookings, orders or payments are made.
 
 The full case study, with the design decisions behind it, is on my portfolio.
+
+
+---
+
+**Arooj Fatima** · Full-stack developer who designs · Portfolio: [aroojfatima-portfolio.netlify.app](https://aroojfatima-portfolio.netlify.app) · aroojfatimaofficial250@gmail.com
